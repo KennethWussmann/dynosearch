@@ -2,6 +2,7 @@
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint", "jest", "header"],
   "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier", "plugin:jest/recommended"],
+  "ignorePatterns": "**/*.d.ts",
   "rules": {
     "header/header": [2, ".vscode/templates/TypeScript.ts"]
   }

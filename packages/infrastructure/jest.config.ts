@@ -35,7 +35,6 @@ module.exports = {
       ...baseConfig,
       displayName: 'integration',
       testMatch: ['<rootDir>/**/*.it.spec.ts'],
-      setupFiles: ['<rootDir>/test/setupUnit.ts'],
     },
   ],
 };

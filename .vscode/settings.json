@@ -1,4 +1,9 @@
 {
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
   "files.exclude": {
     "**/.git": true,
     "**/.svn": true,
@@ -8,7 +13,10 @@
     "**/Thumbs.db": true,
 
     "**/node_modules/": true,
-    "++/.turbo": true
+    "++/.turbo": true,
+    "**/*.js": true,
+    "**/*.d.ts": true,
+    "**/*.map": true
   },
   "editor.snippetSuggestions": "inline"
 }

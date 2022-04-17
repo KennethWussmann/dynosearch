@@ -9,7 +9,7 @@
     "prepack": "yarn build",
     "dev": "yarn build --watch",
     "build": "tsc",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "clean": "find test src -name '*.d.ts' -or -name '*.js' -or -name '*.map' | xargs rm",
     "release": "npm version $PACKAGE_VERSION --allow-same-version --no-git-tag-version && npm publish"
   }
