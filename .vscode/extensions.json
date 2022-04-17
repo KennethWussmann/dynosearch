@@ -1,5 +1,3 @@
 {
-  "recommendations": [
-    "bam.vscode-file-templates"
-  ]
+  "recommendations": ["bam.vscode-file-templates"]
 }
