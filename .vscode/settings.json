@@ -13,10 +13,13 @@
     "**/Thumbs.db": true,
 
     "**/node_modules/": true,
-    "++/.turbo": true,
+    "**/.turbo": true,
     "**/*.js": true,
     "**/*.d.ts": true,
-    "**/*.map": true
+    "**/*.map": true,
+    "**/.husky": true,
+    "**/*.tsbuildinfo": true,
+    "**/*.eslintcache": true
   },
   "editor.snippetSuggestions": "inline"
 }
