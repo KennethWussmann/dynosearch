@@ -30,14 +30,12 @@ module.exports = {
       displayName: 'unit',
       testMatch: ['<rootDir>/**/*.spec.ts'],
       testPathIgnorePatterns: ['it.spec.ts'],
-      setupFiles: ['<rootDir>/test/setupUnit.ts'],
     },
     {
       ...baseConfig,
       displayName: 'integration',
       testMatch: ['<rootDir>/**/*.it.spec.ts'],
       setupFiles: ['<rootDir>/test/setupUnit.ts'],
-      setupFilesAfterEnv: ['<rootDir>/test/setupIntegration.ts'],
     },
   ],
 };
