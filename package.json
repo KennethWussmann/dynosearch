@@ -10,8 +10,8 @@
   ],
   "scripts": {
     "release": "yarn workspaces run release",
-    "deploy": "yarn workspace @turborepo-remote-cache-lambda/infrastructure deploy --require-approval never",
-    "infra:diff": "yarn workspace @turborepo-remote-cache-lambda/infrastructure diff",
+    "deploy": "yarn workspace @dynosearch/infrastructure deploy --require-approval never",
+    "infra:diff": "yarn workspace @dynosearch/infrastructure diff",
     "dev": "yarn turbo run dev",
     "start": "yarn turbo run start",
     "build": "yarn turbo run build",

@@ -19,7 +19,7 @@ jobs:
         id: vars
         run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
       - name: Configure GitHub NPM Registry
-        run: echo "@turborepo-remote-cache-lambda:registry=https://npm.pkg.github.com" > ~/.npmrc
+        run: echo "@dynosearch:registry=https://npm.pkg.github.com" > ~/.npmrc
       - name: Login to GitHub NPM Registry
         run: echo "//npm.pkg.github.com/:_authToken=$GH_TOKEN" >> ~/.npmrc
         env:
