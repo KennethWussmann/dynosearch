@@ -13,9 +13,15 @@
  * See the License for the specific language governing permissions and limitations under the License.
  *
  */
-import { App } from 'aws-cdk-lib';
-import { DynosearchStack } from './dynosearchStack';
+import { Stack, StackProps } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
 
-const app = new App();
-
-new DynosearchStack(app, 'DynosearchStack');
+export class DynosearchStack extends Stack {
+  constructor(scope: Construct, id: string, props?: Partial<StackProps>) {
+    super(scope, id, {
+      stackName: 'dynosearch-test',
+      description: 'Test stack for the dynosearch cdk construct',
+      ...props,
+    });
+  }
+}
