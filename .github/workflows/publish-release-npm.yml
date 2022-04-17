@@ -1,0 +1,30 @@
+name: publish-release-npm
+on:
+  push:
+    tags:
+      - '*.*.*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - name: Get version
+        id: vars
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+      - name: Configure GitHub NPM Registry
+        run: echo "@turborepo-remote-cache-lambda:registry=https://npm.pkg.github.com" > ~/.npmrc
+      - name: Login to GitHub NPM Registry
+        run: echo "//npm.pkg.github.com/:_authToken=$GH_TOKEN" >> ~/.npmrc
+        env:
+          GH_TOKEN: ${{ secrets.CR_PAT }}
+      - name: Publish packages
+        run: yarn release
+        env:
+          PACKAGE_VERSION: ${{ steps.vars.outputs.tag }}

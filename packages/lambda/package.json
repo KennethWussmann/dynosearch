@@ -1,0 +1,16 @@
+{
+  "name": "@dynosearch/lambda",
+  "version": "1.0.0",
+  "author": "Kenneth Wußmann",
+  "license": "Apache-2.0",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "scripts": {
+    "prepack": "yarn build",
+    "dev": "yarn build --watch",
+    "build": "tsc",
+    "test": "jest",
+    "clean": "find test src -name '*.d.ts' -or -name '*.js' -or -name '*.map' | xargs rm",
+    "release": "npm version $PACKAGE_VERSION --allow-same-version --no-git-tag-version && npm publish"
+  }
+}

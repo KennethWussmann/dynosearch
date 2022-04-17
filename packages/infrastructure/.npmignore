@@ -1,0 +1,6 @@
+**/*
+!package.json
+!lib/**/*.d.ts
+!lib/**/*.js
+!README.md
+!LICENSE
