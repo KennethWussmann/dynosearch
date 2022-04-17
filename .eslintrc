@@ -3,6 +3,6 @@
   "plugins": ["@typescript-eslint", "jest", "header"],
   "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier", "plugin:jest/recommended"],
   "rules": {
-    "header/header": [2, ".github/license-header.ts"]
+    "header/header": [2, ".vscode/templates/TypeScript with license.ts"]
   }
 }
