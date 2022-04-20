@@ -13,9 +13,23 @@
  * See the License for the specific language governing permissions and limitations under the License.
  *
  */
-import { App } from 'aws-cdk-lib';
-import { DynoSearchStack } from './dynoSearchStack';
 
-const app = new App();
+import { emptyIndex } from '../../dynoSearchIndex';
+import { IndexPersistenceAdapter } from '../indexPersistenceAdapter';
 
-new DynoSearchStack(app, 'DynoSearchStack');
+/**
+ * A persistence adapter that actually does not persist anything.
+ * Useful for temporary indecies that do not require to be persisted.
+ */
+export const noopIndexPersistenceAdapter: IndexPersistenceAdapter = {
+  drop: async () => {
+    // noop
+  },
+  load: async (name: string) => {
+    // noop
+    return emptyIndex(name);
+  },
+  save: async () => {
+    // noop
+  },
+};

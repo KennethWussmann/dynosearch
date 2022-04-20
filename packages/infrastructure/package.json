@@ -16,12 +16,14 @@
     "release": "npm version $PACKAGE_VERSION --allow-same-version --no-git-tag-version && npm publish"
   },
   "devDependencies": {
+    "@ngneat/falso": "^4.0.0",
     "aws-cdk": "2.8.0",
     "esbuild": "^0.14.36"
   },
   "dependencies": {
     "@aws-cdk/aws-apigatewayv2-alpha": "^2.20.0-alpha.0",
     "@aws-cdk/aws-apigatewayv2-integrations-alpha": "^2.20.0-alpha.0",
+    "@dynosearch/lambda": "*",
     "aws-cdk-lib": "2.8.0",
     "constructs": "^10.0.117"
   }

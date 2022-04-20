@@ -13,9 +13,13 @@
  * See the License for the specific language governing permissions and limitations under the License.
  *
  */
-import { App } from 'aws-cdk-lib';
-import { DynoSearchStack } from './dynoSearchStack';
+import { defaultApplicationContext } from '../applicationContext';
+import { SearchOptions } from '../index/indexService';
 
-const app = new App();
-
-new DynoSearchStack(app, 'DynoSearchStack');
+export const searchHandler = async (input: SearchOptions) => {
+  const { indexService } = defaultApplicationContext;
+  const result = await indexService.search(input);
+  const resultJson = JSON.stringify(result, null, 2);
+  console.log(resultJson);
+  return resultJson;
+};

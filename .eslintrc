@@ -1,9 +1,10 @@
 {
   "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint", "jest", "header"],
+  "plugins": ["@typescript-eslint", "jest", "header", "unused-imports"],
   "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier", "plugin:jest/recommended"],
   "ignorePatterns": "**/*.d.ts",
   "rules": {
+    "unused-imports/no-unused-imports": "error",
     "header/header": [2, ".vscode/templates/TypeScript.ts"]
   }
 }

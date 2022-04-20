@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and limitations under the License.
  *
  */
-import { App } from 'aws-cdk-lib';
-import { DynoSearchStack } from './dynoSearchStack';
 
-const app = new App();
+import { defaultApplicationContext } from '../applicationContext';
 
-new DynoSearchStack(app, 'DynoSearchStack');
+export const reindexHandler = async (pkPrefixes: string[] | undefined) => {
+  console.log('Starting entire reindex of all pks starting with', pkPrefixes);
+  await defaultApplicationContext.indexService.reindex(pkPrefixes);
+  console.log('Finished reindexing and exported index');
+};

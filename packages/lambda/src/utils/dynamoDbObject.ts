@@ -13,9 +13,18 @@
  * See the License for the specific language governing permissions and limitations under the License.
  *
  */
-import { App } from 'aws-cdk-lib';
-import { DynoSearchStack } from './dynoSearchStack';
+import * as z from 'zod';
 
-const app = new App();
+export type DynamoDBObject<TObject> = {
+  pk: string;
+  sk: string;
+} & TObject;
 
-new DynoSearchStack(app, 'DynoSearchStack');
+export type DynamoDBObjectToDomainObject<T extends DynamoDBObject<unknown>> = Omit<T, 'pk' | 'sk'>;
+
+export const dynamoDBZodObjectShape = {
+  pk: z.string(),
+  sk: z.string(),
+};
+
+export const dynamoDBZodObjectSchema = z.object(dynamoDBZodObjectShape);

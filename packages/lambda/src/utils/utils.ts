@@ -13,9 +13,18 @@
  * See the License for the specific language governing permissions and limitations under the License.
  *
  */
-import { App } from 'aws-cdk-lib';
-import { DynoSearchStack } from './dynoSearchStack';
+import type { Readable } from 'stream';
 
-const app = new App();
+const streamToBuffer = async (stream: Readable): Promise<Buffer> =>
+  new Promise((resolve, reject) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const buffer: any[] = [];
+    stream.on('data', (chunk) => buffer.push(chunk));
+    stream.on('end', () => resolve(Buffer.concat(buffer)));
+    stream.on('error', (err) => reject(err));
+  });
 
-new DynoSearchStack(app, 'DynoSearchStack');
+export const streamToString = async (stream: Readable): Promise<string> => {
+  const buffer = await streamToBuffer(stream);
+  return buffer.toString('utf-8');
+};

@@ -14,14 +14,46 @@
  *
  */
 import { Stack, StackProps } from 'aws-cdk-lib';
+import { AttributeType, BillingMode, StreamViewType, Table, TableEncryption } from 'aws-cdk-lib/aws-dynamodb';
 import { Construct } from 'constructs';
+import { DynoSearch } from '../lib/dynoSearch';
 
-export class DynosearchStack extends Stack {
+export class DynoSearchStack extends Stack {
   constructor(scope: Construct, id: string, props?: Partial<StackProps>) {
     super(scope, id, {
       stackName: 'dynosearch-test',
-      description: 'Test stack for the dynosearch cdk construct',
+      description: 'Test stack for the dynosearch CDK construct',
       ...props,
+    });
+
+    const testOriginTable = new Table(this, 'TestOriginTable', {
+      tableName: 'dynosearch-test-origin-table',
+      billingMode: BillingMode.PAY_PER_REQUEST,
+      encryption: TableEncryption.DEFAULT,
+      stream: StreamViewType.NEW_IMAGE,
+      partitionKey: {
+        name: 'pk',
+        type: AttributeType.STRING,
+      },
+      sortKey: {
+        name: 'sk',
+        type: AttributeType.STRING,
+      },
+    });
+
+    new DynoSearch(this, 'TestTable', {
+      persistenceProvider: 'efs',
+      originTable: testOriginTable,
+      originPartitionKeyName: 'pk',
+      helpers: true,
+      efsBastionHost: true,
+      writeMetrics: true,
+      index: {
+        name: 'test',
+        id: 'id',
+        fields: ['fullName', 'street', 'country', 'email', 'biography'],
+        estimatedSize: 'large',
+      },
     });
   }
 }

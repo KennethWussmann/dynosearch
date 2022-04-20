@@ -13,3 +13,7 @@
  * See the License for the specific language governing permissions and limitations under the License.
  *
  */
+export * from './index/indexHandler';
+export * from './helper/searchHandler';
+export * from './helper/reindexHandler';
+export * from './helper/archive/archiveHandler';

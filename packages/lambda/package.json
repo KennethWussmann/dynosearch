@@ -12,5 +12,29 @@
     "test": "jest --passWithNoTests",
     "clean": "find test src -name '*.d.ts' -or -name '*.js' -or -name '*.map' | xargs rm",
     "release": "npm version $PACKAGE_VERSION --allow-same-version --no-git-tag-version && npm publish"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.93",
+    "@types/dotenv": "^8.2.0",
+    "@types/flexsearch": "^0.7.3",
+    "@types/jest": "^27.4.1",
+    "@types/lodash": "^4.14.181",
+    "@types/uuid": "^8.3.4",
+    "jest": "^27.5.1",
+    "jest-mock-extended": "^2.0.5",
+    "ts-jest": "^27.1.4"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.72.0",
+    "@aws-sdk/client-s3": "^3.72.0",
+    "@aws-sdk/util-dynamodb": "^3.72.0",
+    "aws-embedded-metrics": "^2.0.4",
+    "date-fns": "^2.28.0",
+    "dotenv": "^16.0.0",
+    "flexsearch": "^0.7.21",
+    "lodash": "^4.17.21",
+    "pino": "^7.10.0",
+    "uuid": "^8.3.2",
+    "zod": "^3.14.4"
   }
 }

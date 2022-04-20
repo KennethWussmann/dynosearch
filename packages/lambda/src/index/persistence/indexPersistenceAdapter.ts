@@ -13,9 +13,13 @@
  * See the License for the specific language governing permissions and limitations under the License.
  *
  */
-import { App } from 'aws-cdk-lib';
-import { DynoSearchStack } from './dynoSearchStack';
 
-const app = new App();
+import { DynoSearchIndex } from '../dynoSearchIndex';
 
-new DynoSearchStack(app, 'DynoSearchStack');
+export type IndexPersistenceAdapter = {
+  load: (name: string) => Promise<DynoSearchIndex>;
+  save: (index: DynoSearchIndex) => Promise<void>;
+  drop: (name: string) => Promise<void>;
+};
+
+export type IndexPersistenceProvider = 's3' | 'dynamodb' | 'filesystem' | 'noop';
