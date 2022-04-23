@@ -14,11 +14,12 @@
  *
  */
 
-import { constants } from 'fs';
-import { access, readFile, unlink, writeFile, mkdir } from 'fs/promises';
+import { constants, createWriteStream } from 'fs';
+import { access, readFile, unlink, mkdir } from 'fs/promises';
 import { join, dirname } from 'path';
 import { DynoSearchIndex, dynoSearchIndexSchema, emptyIndex } from '../../dynoSearchIndex';
 import { IndexPersistenceAdapter } from '../indexPersistenceAdapter';
+import JsonStreamStringify from 'json-stream-stringify';
 
 const getFileName = (basePath: string, name: string) => join(basePath, 'dynosearch', `${name}.json`);
 
@@ -46,6 +47,17 @@ export const mkdirIfNotExists = async (path: string) => {
   }
 };
 
+const streamJsonToFile = (filePath: string, object: unknown) => {
+  const jsonStream = new JsonStreamStringify(object);
+  const fileStream = createWriteStream(filePath);
+  jsonStream.pipe(fileStream);
+
+  return new Promise((resolve, reject) => {
+    fileStream.on('end', () => resolve(undefined));
+    fileStream.on('error', (err) => reject(err));
+  });
+};
+
 export const fileSystemIndexPersistenceAdapater = (basePath: string): IndexPersistenceAdapter => ({
   load: async (name: string) => {
     if (await fileReadable(getFileName(basePath, name))) {
@@ -61,15 +73,15 @@ export const fileSystemIndexPersistenceAdapater = (basePath: string): IndexPersi
   },
   save: async (index: DynoSearchIndex) => {
     //if (await fileWritable(getFileName(basePath, index.name))) {
+
     try {
       const indexFile = getFileName(basePath, index.name);
       await mkdirIfNotExists(indexFile);
-      // TODO: add8f840-8426-4f4d-8129-a0a2cfd47aa8	ERROR	Couldn't write index to file RangeError: Invalid string length
-      // File is too big. Maybe try streams? Process the individual parts separately? ... but how. They all belong to the same JSON
-      await writeFile(indexFile, JSON.stringify(index), 'utf-8');
+      await streamJsonToFile(indexFile, index);
     } catch (e) {
       console.error("Couldn't write index to file", e);
     }
+
     // } else {
     //   console.error('Failed to write index to file system. Destination is to writable.');
     // }
