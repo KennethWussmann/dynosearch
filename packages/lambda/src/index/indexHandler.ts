@@ -19,6 +19,7 @@ import { Record } from './indexService';
 
 export const indexHandler = async (event: DynamoDBStreamEvent) => {
   const { indexService } = defaultApplicationContext;
+  await indexService.init();
   const recordsToIndex = event.Records.map((record) => {
     const newImage = record.dynamodb?.NewImage;
     if (record) {

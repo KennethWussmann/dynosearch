@@ -17,7 +17,9 @@
 import { defaultApplicationContext } from '../applicationContext';
 
 export const reindexHandler = async (pkPrefixes: string[] | undefined) => {
+  const { indexService } = defaultApplicationContext;
   console.log('Starting entire reindex of all pks starting with', pkPrefixes);
-  await defaultApplicationContext.indexService.reindex(pkPrefixes);
+  await indexService.init();
+  await indexService.reindex(pkPrefixes);
   console.log('Finished reindexing and exported index');
 };

@@ -18,6 +18,7 @@ import { SearchOptions } from '../index/indexService';
 
 export const searchHandler = async (input: SearchOptions) => {
   const { indexService } = defaultApplicationContext;
+  await indexService.init();
   const result = await indexService.search(input);
   const resultJson = JSON.stringify(result, null, 2);
   console.log(resultJson);
