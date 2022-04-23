@@ -149,7 +149,7 @@ export class IndexService {
         object: unmarshall(record),
         event,
       }))
-      .filter((object) => {
+      .filter(({ object }) => {
         const entity = dynamoDBZodObjectSchema.parse(object);
         if (entity.pk.startsWith('dynosearch-')) {
           return false;
