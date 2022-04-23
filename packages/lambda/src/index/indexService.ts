@@ -137,7 +137,7 @@ export class IndexService {
   reindex = async (pkPrefixes: string[] | undefined) => {
     await measureTime(async () => {
       const data = await this.originRepository.getAll(pkPrefixes);
-      await this.indexRecords(data);
+      await this.indexRecords(data.map((record) => ({ record, event: 'INSERT' })));
       this.indexDirty = true;
       await this.persist();
     }, putReIndexTime);
