@@ -46,7 +46,7 @@ export class DynoSearchStack extends Stack {
       originTable: testOriginTable,
       originPartitionKeyName: 'pk',
       helpers: true,
-      efsBastionHost: true,
+      efsBastionHost: false,
       writeMetrics: true,
       index: {
         name: 'test',
