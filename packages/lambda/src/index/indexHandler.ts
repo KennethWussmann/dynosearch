@@ -22,7 +22,7 @@ export const indexHandler = async (event: DynamoDBStreamEvent) => {
   await indexService.init();
   const recordsToIndex = event.Records.map((record) => {
     const newImage = record.dynamodb?.NewImage;
-    if (record) {
+    if (newImage) {
       return {
         record: newImage,
         event: record.eventName,

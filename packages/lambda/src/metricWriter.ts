@@ -18,11 +18,30 @@ import { metricScope, Unit } from 'aws-embedded-metrics';
 import { performance } from 'perf_hooks';
 
 export enum MetricName {
+  /**
+   * Time a single search query took.
+   */
   SearchTime = 'search-time',
+  /**
+   * The time it takes to load the index from the chosen storage option, unpack and import it into the search index.
+   */
   IndexLoadTime = 'index-load-time',
+  /**
+   * Time it takes to save the index to the chosen storage option.
+   */
   IndexSaveTime = 'index-save-time',
+  /**
+   * Time it takes to drop and entirely recreate the index with all items.
+   */
   ReIndexTime = 're-index-time',
+  /**
+   * Total items in the index.
+   */
   IndexItemCount = 'index-item-count',
+  /**
+   * Time it takes to process create, update and delete events from the event stream to saving it in the index.
+   */
+  IndexItemsTime = 'index-items-time',
 }
 
 const writeMetrics = config.writeMetrics;
