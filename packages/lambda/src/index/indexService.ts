@@ -33,6 +33,7 @@ export type SearchOptions = {
   query: string;
   options?: string[] | Partial<DocumentSearchOptions<boolean>>;
 };
+export type Record = { record: NativeAttributeValue; event: 'INSERT' | 'MODIFY' | 'REMOVE' };
 
 type FlexSearchIndex = Document<unknown, false>;
 export class IndexService {
@@ -142,32 +143,44 @@ export class IndexService {
     }, putReIndexTime);
   };
 
-  indexRecords = async (records: NativeAttributeValue[]): Promise<{ success: number; skipped: number }> => {
+  private filterRecords = (records: Record[]): ({ object: { [key: string]: any } } & Omit<Record, 'record'>)[] =>
+    records
+      .map(({ record, event }) => ({
+        object: unmarshall(record),
+        event,
+      }))
+      .filter((object) => {
+        const entity = dynamoDBZodObjectSchema.parse(object);
+        if (entity.pk.startsWith('dynosearch-')) {
+          return false;
+        }
+        // TODO: Check PK prefixes
+        return true;
+      });
+
+  indexRecords = async (records: Record[]): Promise<{ success: number; skipped: number }> => {
     const existingIds = await this.getIds(await this.exportIndexData());
-    const result = await Promise.all(
-      records.map(async (record) => {
-        const id = unmarshall(record)[this.idField];
-        return this.indexRecord(record, existingIds.includes(id) ? this.update : this.add);
+    const successful = await Promise.all(
+      this.filterRecords(records).map(async ({ object, event }) => {
+        const id = object[this.idField];
+        const exists = existingIds.includes(id);
+        if (event === 'REMOVE' && exists) {
+          await this.delete(object);
+          return true;
+        }
+        if (exists) {
+          await this.update(object);
+        } else {
+          await this.add(object);
+        }
+        return true;
       }),
     );
+    const success = successful.filter((r) => r).length;
     return {
-      success: result.filter((r) => r).length,
-      skipped: result.filter((r) => !r).length,
+      success,
+      skipped: records.length - success,
     };
-  };
-
-  private indexRecord = async (
-    record: NativeAttributeValue,
-    action: (object: object) => Promise<void>,
-  ): Promise<boolean> => {
-    const object = unmarshall(record);
-    const entity = dynamoDBZodObjectSchema.parse(object);
-    if (entity.pk.startsWith('dynosearch-')) {
-      return false;
-    }
-    // TODO: Check PK prefixes
-    await action(object);
-    return true;
   };
 
   private add = async (doc: object) => {
@@ -177,6 +190,11 @@ export class IndexService {
 
   private update = async (doc: object) => {
     this.documentIndex.update(doc);
+    this.indexDirty = true;
+  };
+
+  private delete = async (doc: object) => {
+    this.documentIndex.remove(doc);
     this.indexDirty = true;
   };
 
