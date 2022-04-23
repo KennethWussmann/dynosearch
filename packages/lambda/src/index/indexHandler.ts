@@ -19,7 +19,7 @@ import { defaultApplicationContext } from '../applicationContext';
 
 export const indexHandler = async (event: DynamoDBStreamEvent) => {
   const { indexService } = defaultApplicationContext;
-  const recordsToIndex = event.Records.filter((record) => record.eventName === 'INSERT')
+  const recordsToIndex = event.Records.filter((record) => record.eventName !== 'REMOVE')
     .map((record) => record.dynamodb?.NewImage)
     .filter((record): record is NativeAttributeValue => !!record);
 
