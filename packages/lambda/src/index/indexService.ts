@@ -36,8 +36,9 @@ export type SearchOptions = {
 
 type FlexSearchIndex = Document<unknown, false>;
 export class IndexService {
-  documentIndex: FlexSearchIndex | undefined;
+  documentIndex: FlexSearchIndex;
   indexDirty = false;
+  initialized = false;
 
   constructor(
     private originRepository: OriginRepository,
@@ -45,22 +46,23 @@ export class IndexService {
     private indexName: string,
     private idField: string,
     private fields: string[],
-  ) {}
+  ) {
+    this.documentIndex = this.createIndex();
+  }
 
-  private importIndex = async (index: FlexSearchIndex): Promise<FlexSearchIndex> => {
+  private importIndex = async () => {
     const indexData = await this.indexPersistenceAdapater.load(this.indexName);
     if (indexData) {
       indexData.searchIndexData.forEach(({ key, data }) => {
-        index.import(key, data);
+        this.documentIndex.import(key, data);
       });
       console.log('Imported index', indexData.searchIndexData.length);
     } else {
       console.log('No index found. Using empty index.');
     }
-    return index;
   };
 
-  private createIndex = (): Document<unknown, false> =>
+  private createIndex = (): FlexSearchIndex =>
     new Document({
       tokenize: 'full',
       charset: 'latin:advanced',
@@ -72,20 +74,16 @@ export class IndexService {
       },
     });
 
-  getOrLoadIndex = async (): Promise<Document<unknown, false>> => {
-    if (this.documentIndex) {
-      return this.documentIndex;
+  init = async () => {
+    if (this.initialized) {
+      return;
     }
-    const [index] = await measureTime(async () => await this.importIndex(this.createIndex()), putIndexLoadTime);
-    this.documentIndex = index;
+    await measureTime(async () => await this.importIndex(), putIndexLoadTime);
     this.indexDirty = false;
-    return this.documentIndex;
+    this.initialized = true;
   };
 
   exportIndexData = async (): Promise<DynoSearchIndex> => {
-    if (!this.documentIndex) {
-      throw new Error('Index not initialized');
-    }
     const indexData: FlexSearchIndexExport = [];
     return new Promise((resolve) => {
       const perIndexKeys = 1;
@@ -93,7 +91,7 @@ export class IndexService {
       const expectedKeys = this.fields.length * perFieldKeys + perIndexKeys;
       let received = 0;
 
-      this.documentIndex!.export(async (key, data) => {
+      this.documentIndex.export(async (key, data) => {
         if (!key || !data) {
           return;
         }
@@ -112,10 +110,12 @@ export class IndexService {
     });
   };
 
+  private getIds = async (dynoSearchIndex: DynoSearchIndex | undefined) => {
+    const searchData = dynoSearchIndex?.searchIndexData ?? (await this.exportIndexData())?.searchIndexData;
+    return Object.keys(JSON.parse(searchData.find((part) => part.key === 'reg')?.data ?? '{}'));
+  };
+
   persist = async (): Promise<DynoSearchIndex> => {
-    if (!this.documentIndex) {
-      throw new Error('Index not initialized');
-    }
     if (!this.indexDirty) {
       throw new Error('Index not dirty');
     }
@@ -127,9 +127,7 @@ export class IndexService {
     const millis = end - start;
     putIndexSaveTime(millis);
 
-    const items = Object.keys(
-      JSON.parse(dynoSearchIndex.searchIndexData.find((part) => part.key === 'reg')?.data ?? '{}'),
-    ).length;
+    const items = (await this.getIds(dynoSearchIndex)).length;
     putIndexItemCount(items);
 
     return dynoSearchIndex;
@@ -137,43 +135,58 @@ export class IndexService {
 
   reindex = async (pkPrefixes: string[] | undefined) => {
     await measureTime(async () => {
-      const tempIndex = this.createIndex();
       const data = await this.originRepository.getAll(pkPrefixes);
-      await Promise.all(data.map(async (item) => await this.indexRecord(item, tempIndex)));
-      this.documentIndex = tempIndex;
+      await this.indexRecords(data);
       this.indexDirty = true;
       await this.persist();
     }, putReIndexTime);
   };
 
-  indexRecord = async (
+  indexRecords = async (records: NativeAttributeValue[]): Promise<{ success: number; skipped: number }> => {
+    const existingIds = await this.getIds(await this.exportIndexData());
+    const result = await Promise.all(
+      records.map(async (record) => {
+        const id = unmarshall(record)[this.idField];
+        return this.indexRecord(record, existingIds.includes(id) ? this.update : this.add);
+      }),
+    );
+    return {
+      success: result.filter((r) => r).length,
+      skipped: result.filter((r) => !r).length,
+    };
+  };
+
+  private indexRecord = async (
     record: NativeAttributeValue,
-    flexSearchIndex: Document<unknown, false> | undefined = undefined,
-  ) => {
+    action: (object: object) => Promise<void>,
+  ): Promise<boolean> => {
     const object = unmarshall(record);
     const entity = dynamoDBZodObjectSchema.parse(object);
     if (entity.pk.startsWith('dynosearch-')) {
       return false;
     }
     // TODO: Check PK prefixes
-    await this.add(object, flexSearchIndex);
+    await action(object);
     return true;
   };
 
-  private add = async (doc: object, flexSearchIndex: Document<unknown, false> | undefined = undefined) => {
-    const index = flexSearchIndex ?? (await this.getOrLoadIndex());
-    index.add(doc);
+  private add = async (doc: object) => {
+    this.documentIndex.add(doc);
+    this.indexDirty = true;
+  };
+
+  private update = async (doc: object) => {
+    this.documentIndex.update(doc);
     this.indexDirty = true;
   };
 
   search = async (searchOptions: SearchOptions): Promise<SimpleDocumentSearchResultSetUnit[]> => {
     const [result] = await measureTime(async () => {
-      const index = await this.getOrLoadIndex();
       const result = searchOptions.options
-        ? index.search(searchOptions.query, searchOptions.options)
-        : index.search(searchOptions.query);
+        ? this.documentIndex?.search(searchOptions.query, searchOptions.options)
+        : this.documentIndex?.search(searchOptions.query);
       return result;
     }, putSearchTime(!!this.documentIndex));
-    return result;
+    return result ?? [];
   };
 }

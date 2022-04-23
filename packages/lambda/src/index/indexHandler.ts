@@ -18,22 +18,16 @@ import { defaultApplicationContext } from '../applicationContext';
 
 export const indexHandler = async (event: DynamoDBStreamEvent) => {
   const { indexService } = defaultApplicationContext;
-  let indexedItems = 0;
-  await Promise.all(
-    event.Records.map(async (record) => {
-      if (!record.dynamodb?.NewImage || record.eventName !== 'INSERT') {
-        return;
-      }
-      const result = await indexService.indexRecord(record.dynamodb.NewImage);
-      if (result) {
-        indexedItems++;
-      }
-    }),
-  );
+  const recordsToIndex = event.Records.filter((record) => record.dynamodb?.NewImage && record.eventName === 'INSERT');
 
-  console.log(`Indexed ${indexedItems} of ${event.Records.length} records.`);
+  if (recordsToIndex.length === 0) {
+    return;
+  }
 
-  if (indexedItems > 0) {
+  const { success, skipped } = await indexService.indexRecords(recordsToIndex);
+  console.log(`Indexed ${success} of ${recordsToIndex.length} records and skipped ${skipped}.`);
+
+  if (success > 0) {
     await indexService.persist();
     console.log('Exported index');
   }

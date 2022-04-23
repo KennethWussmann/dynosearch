@@ -22,7 +22,7 @@ export class ArchiveIndexService {
 
   uploadIndex = async () => {
     try {
-      await this.indexService.getOrLoadIndex();
+      await this.indexService.init();
       const index = await this.indexService.exportIndexData();
       const now = new Date();
       const key = `archive/${format(now, 'yyyy/MM/dd')}/${index.name}-${now.getTime()}.json`;
