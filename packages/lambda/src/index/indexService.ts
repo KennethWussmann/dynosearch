@@ -151,6 +151,7 @@ export class IndexService {
       }))
       .filter(({ object }) => {
         const entity = dynamoDBZodObjectSchema.parse(object);
+        // prevent dynosearch entries from being indexed in case of one-table-design
         if (entity.pk.startsWith('dynosearch-')) {
           return false;
         }
@@ -164,12 +165,13 @@ export class IndexService {
       this.filterRecords(records).map(async ({ object, event }) => {
         const id = object[this.idField];
         const exists = existingIds.includes(id);
-        if (event === 'REMOVE' && exists) {
-          await this.delete(object);
-          return true;
-        }
+
         if (exists) {
-          await this.update(object);
+          if (event === 'REMOVE') {
+            await this.delete(object);
+          } else {
+            await this.update(object);
+          }
         } else {
           await this.add(object);
         }
