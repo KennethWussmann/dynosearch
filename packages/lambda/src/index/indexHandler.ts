@@ -13,12 +13,15 @@
  * See the License for the specific language governing permissions and limitations under the License.
  *
  */
+import { NativeAttributeValue } from '@aws-sdk/util-dynamodb';
 import type { DynamoDBStreamEvent } from 'aws-lambda';
 import { defaultApplicationContext } from '../applicationContext';
 
 export const indexHandler = async (event: DynamoDBStreamEvent) => {
   const { indexService } = defaultApplicationContext;
-  const recordsToIndex = event.Records.filter((record) => record.dynamodb?.NewImage && record.eventName === 'INSERT');
+  const recordsToIndex = event.Records.filter((record) => record.eventName === 'INSERT')
+    .map((record) => record.dynamodb?.NewImage)
+    .filter((record): record is NativeAttributeValue => !!record);
 
   if (recordsToIndex.length === 0) {
     return;
