@@ -220,11 +220,12 @@ export class DynoSearch extends Construct {
   ): LambdaFn => {
     const fields = this.props.index.fields.length;
     const maxMemory = 10240;
-    const defaultLambdaProps: Record<IndexSize, Partial<NodejsFunctionProps>> = {
+    const defaultLambdaPropsMap: Record<IndexSize, Partial<NodejsFunctionProps>> = {
       small: { memorySize: Math.min(512 * fields, maxMemory), timeout: Duration.minutes(Math.min(1 * fields, 10)) },
       medium: { memorySize: Math.min(1024 * fields, maxMemory), timeout: Duration.minutes(Math.min(2 * fields, 10)) },
       large: { memorySize: Math.min(2048 * fields, maxMemory), timeout: Duration.minutes(Math.min(3 * fields, 10)) },
     };
+    const defaultLambdaProps = defaultLambdaPropsMap[this.props.index.estimatedSize || 'medium'];
 
     const filesystem = this.props.reuseLambdaFileSystem
       ? this.props.reuseLambdaFileSystem
@@ -247,7 +248,7 @@ export class DynoSearch extends Construct {
         Object.entries({
           AWS_EMF_NAMESPACE: 'DynoSearch',
           AWS_EMF_SERVICE_NAME: 'dynosearch',
-          NODE_OPTIONS: '--enable-source-maps',
+          NODE_OPTIONS: `--enable-source-maps --max-old-space-size=${(defaultLambdaProps.memorySize ?? 1024) / 2}`,
           LOG_LEVEL: 'debug',
           WRITE_METRICS: this.props.writeMetrics ? 'true' : 'false',
           INDEX_NAME: this.props.index.name,
@@ -266,7 +267,7 @@ export class DynoSearch extends Construct {
       architecture: Architecture.ARM_64,
       vpc: this.vpc,
       filesystem,
-      ...defaultLambdaProps[this.props.index.estimatedSize || 'medium'],
+      ...defaultLambdaProps,
       ...functionPropsOverride,
     });
     this.grantLambdaAccess(f);
